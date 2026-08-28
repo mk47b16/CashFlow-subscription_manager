@@ -7,7 +7,7 @@ const at = (month: string, day: number) => `${month}-${pad(day)}`;
 const recurring = [
   { names: ["NETFLIX.COM", "Netflix Mumbai", "Nflx*Streaming"], amounts: [499, 499, 499, 499, 499, 499, 499, 649, 649, 649], day: 7, category: "Entertainment" as const, engagement: [0,0,0,0,0,0,0,0,0,0] },
   { names: ["Spotify Premium", "SPOTIFY P", "Spotify AB"], amounts: [119,119,119,119,119,119,119,119,119,119], day: 13, category: "Entertainment" as const, engagement: [10,9,15,12,8,13,11,14,8,10] },
-  { names: ["Amazon Prime", "AMZN Prime"], amounts: [1499,1499,1499,1499,1499,1499,1499,1499,1499,1499], day: 3, category: "Shopping" as const, engagement: [4,2,1,3,2,0,1,2,0,1], frequency: "yearly" as const },
+  { names: ["Amazon Prime", "AMZN Prime"], amounts: [1499,1499,1499,1499,1499,1499,1499,1499,1499,1499], day: 3, category: "Entertainment" as const, engagement: [4,2,1,3,2,0,1,2,0,1], frequency: "yearly" as const },
   { names: ["YouTube Premium", "YOUTUBE*PREMIUM", "Youtube Premium India"], amounts: [129,129,129,129,129,129,129,129,129,129], day: 17, category: "Entertainment" as const, engagement: [2,0,3,1,0,2,1,0,0,1] },
   { names: ["Notion AI", "NOTION.SO"], amounts: [800,800,800,800,800,800,800,800,800,800], day: 22, category: "Other" as const, engagement: [6,5,7,4,5,4,6,5,4,3] },
   { names: ["Arjun Rent Split", "Arjun UPI Rent", "Flatmate UPI Transfer"], amounts: [14500,14500,14500], day: 2, category: "Transfer" as const, engagement: [30,30,30], start: 7 },

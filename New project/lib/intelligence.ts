@@ -20,8 +20,8 @@ export function similarity(a: string, b: string) {
   const dot = [...terms].reduce((s, t) => s + Number(av.includes(t)) * Number(bv.includes(t)), 0);
   return dot / Math.sqrt(Math.max(1, av.length) * Math.max(1, bv.length));
 }
-const days = (a: string, b: string) => Math.round((new Date(b).getTime() - new Date(a).getTime()) / 86400000);
-const fmtDate = (date: string) => new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(new Date(date));
+const days = (a: string, b: string) => Math.round((new Date(`${b}T00:00:00`).getTime() - new Date(`${a}T00:00:00`).getTime()) / 86400000);
+const fmtDate = (date: string) => new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(new Date(`${date}T00:00:00`));
 
 export function detectSubscriptions(source = transactions): Subscription[] {
   const groups = new Map<string, Transaction[]>();
@@ -31,13 +31,13 @@ export function detectSubscriptions(source = transactions): Subscription[] {
   return [...groups].map(([canonical, members]) => {
     const sorted = [...members].sort((a,b) => a.date.localeCompare(b.date));
     const intervals = sorted.slice(1).map((t, i) => days(sorted[i].date, t.date));
-    const medianInterval = intervals.sort((a,b)=>a-b)[Math.floor(intervals.length / 2)] ?? 30;
+    const medianInterval = intervals.sort((a,b)=>a-b)[Math.floor(intervals.length / 2)] ?? 365;
     const frequency: Subscription["frequency"] = medianInterval > 300 ? "yearly" : medianInterval > 80 ? "quarterly" : medianInterval < 12 ? "weekly" : "monthly";
     const averageAmount = Math.round(members.reduce((s,t)=>s+t.amount,0) / members.length);
     const variance = Math.max(...members.map(t => Math.abs(t.amount - averageAmount))) / averageAmount;
     const merchantSim = members.slice(1).reduce((s,t) => s + similarity(members[0].merchant,t.merchant), 0) / Math.max(1,members.length-1);
     const confidence = Math.min(98, Math.round(54 + members.length * 5 + merchantSim * 15 + Math.max(0, 9 - variance * 50)));
-    const last = sorted.at(-1)!; const next = new Date(last.date); next.setDate(next.getDate() + (frequency === "yearly" ? 365 : frequency === "quarterly" ? 90 : frequency === "weekly" ? 7 : 30));
+    const last = sorted.at(-1)!; const next = new Date(`${last.date}T00:00:00`); next.setDate(next.getDate() + (frequency === "yearly" ? 365 : frequency === "quarterly" ? 90 : frequency === "weekly" ? 7 : 30));
     const isLearning = canonical === "Arjun Rent Split";
     const increased = canonical === "Netflix";
     const duplicate = canonical === "YouTube Premium";
