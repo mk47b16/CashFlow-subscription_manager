@@ -38,7 +38,7 @@ export function AddSubscriptionModal({ onClose, onSave }: { onClose: () => void;
     finally { setBusy(false); }
   };
 
-  return <div className="drawer-backdrop" role="presentation" onMouseDown={onClose}><section className="entry-modal" role="dialog" aria-modal="true" aria-labelledby="entry-title" onMouseDown={event => event.stopPropagation()}>
+  return <div className="drawer-backdrop" role="presentation" onClick={onClose}><section className="entry-modal" role="dialog" aria-modal="true" aria-labelledby="entry-title" onClick={event => event.stopPropagation()}>
     <button className="close-btn" onClick={onClose} aria-label="Close subscription form"><X size={20}/></button>
     <p className="eyebrow">LIVE TRANSACTION ENTRY</p><h2 id="entry-title">Add a subscription</h2><p className="auth-copy">Choose a service or add your own. CashFlow recalculates your recurring spend and charts as soon as it is saved.</p>
     <form className="entry-form" onSubmit={submit}>
