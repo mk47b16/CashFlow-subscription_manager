@@ -1,3 +1,3 @@
-import { CashFlowApp } from "../components/spendsense-app";
+import { CashFlowApp, ErrorBoundary } from "../components/spendsense-app";
 
-export default function Home() { return <CashFlowApp />; }
+export default function Home() { return <ErrorBoundary><CashFlowApp /></ErrorBoundary>; }
