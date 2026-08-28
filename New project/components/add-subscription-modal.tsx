@@ -4,7 +4,9 @@ import { FormEvent, useState } from "react";
 import { X } from "lucide-react";
 import { Transaction } from "../lib/types";
 
-type Preset = { label: string; merchant: string; amount: number; category: Transaction["category"]; frequency: "monthly" | "yearly" };
+type Frequency = "weekly" | "monthly" | "quarterly" | "yearly";
+
+type Preset = { label: string; merchant: string; amount: number; category: Transaction["category"]; frequency: Frequency };
 const presets: Preset[] = [
   { label: "Netflix", merchant: "NETFLIX.COM", amount: 649, category: "Entertainment", frequency: "monthly" },
   { label: "Spotify", merchant: "SPOTIFY P", amount: 119, category: "Entertainment", frequency: "monthly" },
@@ -14,16 +16,17 @@ const presets: Preset[] = [
   { label: "Custom subscription", merchant: "", amount: 0, category: "Other", frequency: "monthly" }
 ];
 
-export type SubscriptionEntry = { merchant: string; amount: number; category: Transaction["category"]; date: string; frequency: "monthly" | "yearly"; type: string };
+export type SubscriptionEntry = { merchant: string; amount: number; category: Transaction["category"]; date: string; frequency: Frequency; type: string };
 
 export function AddSubscriptionModal({ onClose, onSave }: { onClose: () => void; onSave: (entry: SubscriptionEntry) => Promise<void> }) {
   const [selected, setSelected] = useState(presets[0]);
   const [merchant, setMerchant] = useState(presets[0].merchant);
   const [amount, setAmount] = useState(String(presets[0].amount));
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
-  const [frequency, setFrequency] = useState<"monthly" | "yearly">(presets[0].frequency);
+  const [frequency, setFrequency] = useState<Frequency>(presets[0].frequency);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [saved, setSaved] = useState(false);
 
   const choose = (label: string) => {
     const preset = presets.find(item => item.label === label) ?? presets[0];
@@ -31,9 +34,9 @@ export function AddSubscriptionModal({ onClose, onSave }: { onClose: () => void;
   };
   const submit = async (event: FormEvent) => {
     event.preventDefault(); setError("");
-    if (!merchant.trim() || Number(amount) <= 0) { setError("Enter a merchant and a valid amount."); return; }
+    if (!merchant.trim() || !Number.isFinite(Number(amount)) || Number(amount) <= 0) { setError("Enter a merchant and a valid amount."); return; }
     setBusy(true);
-    try { await onSave({ merchant: merchant.trim(), amount: Number(amount), category: selected.category, date, frequency, type: selected.label }); onClose(); }
+    try { await onSave({ merchant: merchant.trim(), amount: Number(amount), category: selected.category, date, frequency, type: selected.label }); setSaved(true); setTimeout(onClose, 800); }
     catch (reason) { setError(reason instanceof Error ? reason.message : "Could not save this subscription."); }
     finally { setBusy(false); }
   };
@@ -44,8 +47,8 @@ export function AddSubscriptionModal({ onClose, onSave }: { onClose: () => void;
     <form className="entry-form" onSubmit={submit}>
       <label>Subscription type<select value={selected.label} onChange={event => choose(event.target.value)}>{presets.map(preset => <option key={preset.label}>{preset.label}</option>)}</select></label>
       <div className="form-pair"><label>Merchant<input value={merchant} onChange={event => setMerchant(event.target.value)} placeholder="e.g. Netflix India" required /></label><label>Amount (₹)<input type="number" min="1" value={amount} onChange={event => setAmount(event.target.value)} required /></label></div>
-      <div className="form-pair"><label>Charged on<input type="date" value={date} onChange={event => setDate(event.target.value)} required /></label><label>Billing frequency<select value={frequency} onChange={event => setFrequency(event.target.value as "monthly" | "yearly")}><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select></label></div>
-      {error && <p className="auth-message">{error}</p>}<button className="primary-btn auth-submit" disabled={busy}>{busy ? "Saving…" : "Save subscription"}</button>
+      <div className="form-pair"><label>Charged on<input type="date" value={date} onChange={event => setDate(event.target.value)} required /></label><label>Billing frequency<select value={frequency} onChange={event => setFrequency(event.target.value as Frequency)}><option value="weekly">Weekly</option><option value="monthly">Monthly</option><option value="quarterly">Quarterly</option><option value="yearly">Yearly</option></select></label></div>
+      {error && <p className="auth-message" aria-live="polite">{error}</p>}<button className="primary-btn auth-submit" disabled={busy || saved}>{saved ? "Saved ✓" : busy ? "Saving…" : "Save subscription"}</button>
     </form>
   </section></div>;
 }

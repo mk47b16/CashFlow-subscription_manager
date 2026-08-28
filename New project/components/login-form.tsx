@@ -5,6 +5,18 @@ import { ArrowRight, BarChart3, LockKeyhole, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabase";
 
+// Map raw Supabase auth error messages to friendly, user-facing copy.
+function friendlyAuthMessage(raw: string): string {
+  const text = raw.toLowerCase();
+  if (text.includes("invalid login credentials")) return "Wrong email or password";
+  if (text.includes("email not confirmed")) return "Confirm your email before signing in";
+  if (text.includes("user already registered")) return "An account with this email already exists";
+  if (text.includes("password should be at least")) return "Password must be at least 6 characters";
+  if (text.includes("rate limit") || text.includes("too many")) return "Too many attempts. Please wait a moment and try again";
+  if (text.includes("network") || text.includes("failed to fetch")) return "Network error. Check your connection and try again";
+  return raw;
+}
+
 export function LoginForm() {
   const router = useRouter();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
@@ -19,7 +31,7 @@ export function LoginForm() {
     setBusy(true); setMessage("");
     const result = mode === "signin" ? await supabase.auth.signInWithPassword({ email, password }) : await supabase.auth.signUp({ email, password });
     setBusy(false);
-    if (result.error) { setMessage(result.error.message); return; }
+    if (result.error) { setMessage(friendlyAuthMessage(result.error.message)); return; }
     if (!result.data.session) { setMessage("Account created. Confirm your email, then return here to sign in."); return; }
     router.push("/"); router.refresh();
   };
